@@ -14,3 +14,5 @@ build
 # PyCharm
 .idea/*
 .idea
+temp/*
+temp

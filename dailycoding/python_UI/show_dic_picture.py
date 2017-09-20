@@ -1,76 +1,81 @@
 # coding=utf-8
-from __future__ import print_function
-
+"""
+初始化一个app。
+用一个frame实现目录的功能，其上只有一个listbox；
+用另一个frame实现图片展示的功能，
+两个frame通过app进行信息的传递。
+"""
 try:
 	import wx
-except ImportError as e:
-	print(e)
+except ImportError:
+	import wx
 	print('安装地址:', 'https://www.wxpython.org/download.php')
+	print('或使用pip的方式安装：', 'pip install -U wxPython')
 import os
+start_path = os.getcwd()  # 程序运行的路径，决定了保存结果文件的路径
 
 
 class PBDirFrame(wx.Frame):
-	def __init__(self, app, curdir):
+	def __init__(self, app, cur_dir):
 		"""
-		
+		显示图片列表的frame
 		:param app: 应用
-		:param curdir: 根目录
+		:param cur_dir: 根目录
 		"""
-		wx.Frame.__init__(self, None, -1, u"选择文件夹", size=(250, 500))
+		super(PBDirFrame, self).__init__(None, -1, title='选择', size=(250, 500))
 		self.app = app
-		# 设置字体
-		font = wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False, 'Courier New')
+
+		'''设置字体'''
+		font = wx.Font(12, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL,
+		               wx.FONTWEIGHT_NORMAL, faceName='Courier New')
 		self.SetFont(font)
-		# 文件夹listbox
-		self.list = wx.ListBox(self, -1, (0, 0), (200, 600), '', wx.LB_SINGLE)
-		self.list.Bind(wx.EVT_LISTBOX_DCLICK, self.on_dclick)
-		# 加载当前文件夹
-		os.chdir(curdir)
-		self.load_dir(curdir)
-		# 绑定事件
-		self.Bind(wx.EVT_CLOSE, self.on_close)
-		# 显示窗口
+
+		'''listbox'''
+		self.list = wx.ListBox(self, id=-1, pos=(0, 0), size=(200, 600))
+		os.chdir(cur_dir)
+		self.load_dir(os.getcwd())
+
+		'''事件绑定'''
+		self.Bind(wx.EVT_CLOSE, self.on_close)  # 关闭frame窗口事件
+		self.list.Bind(wx.EVT_LISTBOX_DCLICK, self.on_dclick)  # 双击事件
+
 		self.Show()
 	
 	def on_close(self, event):
+		"""关闭窗口，关闭app"""
 		self.Destroy()
 		self.app.close()
 	
 	def on_dclick(self, event):
-		"""
-		listbox双击事件
-		:param event:
-		:return:
-		"""
-		if self.list.GetSelection() == 0:  # 判断是否选择了返回上一层文件夹
+		"""listbox双击事件"""
+		'''判断是否返回上级文件夹'''
+		if self.list.GetSelection() == 0:
 			path = os.getcwd()
-			print(path)
 			pathinfo = os.path.split(path)
-			dir_ = pathinfo[0]
-		else:  # 获得需要进入的下一层文件夹
-			dir_ = self.list.GetStringSelection()
-		
-		if os.path.isdir(dir_):  # 进入文件夹
-			self.load_dir(dir_)
-		elif os.path.splitext(dir_)[-1] == '.png':  # 显示图片
-			# elif os.path.splitext(dir_)[-1] == '.jpg':  # 显示图片
-			self.app.show_zcbh_message(dir_)
+			cur_dir = pathinfo[0]  # 上级文件夹路径
+		else:
+			cur_dir = self.list.GetStringSelection()  # 选中文件夹路径
+
+		'''判断是否是图片'''
+		if os.path.isdir(cur_dir):
+			self.load_dir(cur_dir)
+			os.chdir(cur_dir)
+		elif os.path.splitext(cur_dir)[-1] == '.png':  # 显示图片
+			self.app.show_zcbh_message(cur_dir)
+		else:
+			print('It\'s not directionary or pictures followed by \'.png\'')
 	
 	def load_dir(self, prior_dir):
-		# 不是目录则不进行操作
-		if not os.path.isdir(prior_dir):
+		"""加载文件夹中的内容到ListBox"""
+		if not os.path.isdir(prior_dir):  # 不是目录则不进行操作
 			return
 		self.list.Clear()  # 清空
 		self.list.Append('...')  # 添加返回上一层文件夹标志
 		for element in os.listdir(prior_dir):
 			self.list.Append(element)
-		os.chdir(prior_dir)  # 设置工作路径
-	
+
 	def get_next_zcbh(self):
-		"""
-		获得下一张要显示的图片
-		:return:
-		"""
+		"""获得下一张要显示的图片"""
 		index = self.list.GetSelection()
 		i = index
 		while i + 1 < self.list.GetCount():
@@ -83,10 +88,7 @@ class PBDirFrame(wx.Frame):
 		return self.list.GetStringSelection()
 	
 	def get_pre_zcbh(self):
-		"""
-		获得上一张图片
-		:return:
-		"""
+		"""获得上一张图片"""
 		index = self.list.GetSelection()
 		i = index
 		while i - 1 > 0:
@@ -95,7 +97,6 @@ class PBDirFrame(wx.Frame):
 				break
 		if i > 0:
 			index = i
-		
 		self.list.SetSelection(index)
 		return self.list.GetStringSelection()
 
@@ -104,10 +105,10 @@ class PBPicFrame(wx.Frame):
 	max_width = 800
 	max_height = 400
 	
-	def __init__(self, app, sample_path):
-		wx.Frame.__init__(self, None, -1, u"筛选样本", size=(800, 600))
+	def __init__(self, app, result_path):
+		super(PBPicFrame, self).__init__(None, -1, "展示", size=(800, 600))
 		self.app = app
-		self.path = sample_path
+		self.result_path = result_path
 		
 		self.SetSizeHints(-1, -1)
 		bs1 = wx.BoxSizer(wx.VERTICAL)
@@ -141,58 +142,42 @@ class PBPicFrame(wx.Frame):
 		self.SetSizer(bs1)
 		self.Layout()
 		self.Centre(wx.BOTH)
-		
-		self.Bind(wx.EVT_MOUSEWHEEL, self.on_change_message)
-		self.Bind(wx.EVT_KEY_DOWN, self.on_key_down)
-		self.Bind(wx.EVT_TEXT_ENTER, self.save, self.input_text)
-		self.Bind(wx.EVT_BUTTON, self.bsave, self.button_ok)
-		self.Bind(wx.EVT_BUTTON, self.rewrite, self.button_rewrite)
+
+		'''事件绑定'''
+		self.Bind(wx.EVT_MOUSEWHEEL, self.on_change_message)  # 鼠标滚动事件
+		self.Bind(wx.EVT_TEXT_ENTER, self.save, self.input_text)  # 文本输入事件
+		self.Bind(wx.EVT_BUTTON, self.bsave, self.button_ok)  # 按键
+		self.Bind(wx.EVT_BUTTON, self.rewrite, self.button_rewrite)  # 按键
+		self.Bind(wx.EVT_CLOSE, self.on_close)  # 关闭frame窗口事件
 		self.name = None
 		self.bmppath = None
 		self.pos = None
 		self.Hide()
 	
 	def show_zcbh_message(self, path):
-		"""
-		显示用户的数据图片和用户名
-		:param path:
-		:return:
-		"""
+		if os.path.splitext(path)[-1] != '.png':
+			return
 		self.show_image(path)
 		self.show_name(path)
 	
 	def show_name(self, path):
-		"""
-		显示用户名
-		:param path:
-		:return:
-		"""
-		if os.path.splitext(path)[-1] != '.png':
-			return
-		self.name = path[4:-4]
+		"""显示图片名称"""
+		self.name = os.path.splitext(path)[0]
 		self.display_text.SetValue(self.name)
 	
 	def show_image(self, path):
-		if os.path.splitext(path)[-1] != '.png':
-			return
+		"""显示图片"""
 		self.bmppath = path
-		# print(path)
-		# print(os.getcwd())
 		image = wx.Image(path, wx.BITMAP_TYPE_PNG)  # 如果图片类型是png
-		# image = wx.Image(path, wx.BITMAP_TYPE_JPEG)  # 如果图片类型是jpeg
 		bmp = image.ConvertToBitmap()
-		size = self.get_size(bmp)
+		size = self.scale_size(bmp)
 		bmp = image.Scale(size[0], size[1]).ConvertToBitmap()
 		self.bmp.SetSize(size)
 		self.bmp.SetBitmap(bmp)
 		self.Show()
 	
-	def get_size(self, bmp):
-		"""
-		调整图片尺寸
-		:param bmp:
-		:return:
-		"""
+	def scale_size(self, bmp):
+		"""调整图片尺寸"""
 		width = bmp.GetWidth()
 		height = bmp.GetHeight()
 		if width > self.max_width:
@@ -205,81 +190,52 @@ class PBPicFrame(wx.Frame):
 		return size
 	
 	def on_change_message(self, event):
-		"""
-		鼠标滚轮浏览用户
-		:param event:
-		:return:
-		"""
+		"""鼠标滚轮浏览用户"""
 		rotation = event.GetWheelRotation()
 		if rotation < 0:
 			self.app.show_next_zcbh()
 		else:
 			self.app.show_pre_zcbh()
 	
-	def on_key_down(self, event):
-		"""
-		键盘控制图片放大缩小
-			数字1放大
-			数字2缩小
-		:param event:
-		:return:
-		"""
-		keycode = event.GetKeyCode()
-		if keycode == 49:
-			self.size_up()
-		elif keycode == 50:
-			self.size_down()
-		event.Skip()  # 这个貌似很重要，要同时触发app上的快捷键
-	
-	def size_up(self):
-		self.max_width += 50
-		self.max_height += 75
-		self.show_zcbh_message(self.bmppath)
-	
-	def size_down(self):
-		self.max_width -= 50
-		self.max_height -= 75
-		self.show_zcbh_message(self.bmppath)
-	
 	def save(self, event):
-		"""
-		获取样本类型，并保存
-		:param event:
-		:return:
-		"""
-		# print(self.input_text.GetValue())
+		"""获取样本类型，并保存"""
 		data_type = self.input_text.GetValue()
 		sample = self.name + ',' + data_type
+		print(type(self.name))
+		print(type(','))
+		print(type(data_type))
 		print(sample)
-		filename = self.path
-		with open(filename, 'a') as f:
+		with open(self.result_path, 'a') as f:
 			f.write(sample + '\n')
 		self.app.show_next_zcbh()
 		self.input_text.Clear()
 		self.input_text.SetFocus()
 	
 	def bsave(self, event):
-		# data_type = self.input_text.GetValue()
 		self.save(event)
 	
 	def rewrite(self, event):
 		self.app.show_pre_zcbh()
 
+	def on_close(self, event):
+		"""关闭窗口"""
+		self.Destroy()
+
 
 class PBApp(wx.App):
-	def __init__(self, curdir_path, sample_path, redirect=False):
+	def __init__(self, curdir_path, result_path, redirect=False):
 		wx.App.__init__(self, redirect)  # redirect=False将信息输出到dos界面
-		# 显示文件夹列表界面
 		self.dirframe = PBDirFrame(self, curdir_path)
-		# 显示图片界面
-		self.picframe = PBPicFrame(self, sample_path)
-	
-	# 绑定事件
-	# self.Bind(wx.EVT_KEY_DOWN, self.on_key_down)
+		self.picframe = PBPicFrame(self, os.path.join(start_path, result_path))
 	
 	def show_zcbh_message(self, path):
+		"""
+		显示图片及其信息的触发条件：
+			1. 双击文件列表中的图片名
+			2. 鼠标滑动
+		"""
 		self.picframe.show_zcbh_message(path)
-		self.picframe.SetFocus()
+		# self.picframe.SetFocus()
 	
 	def show_next_zcbh(self):
 		path = self.dirframe.get_next_zcbh()
@@ -289,19 +245,10 @@ class PBApp(wx.App):
 		path = self.dirframe.get_pre_zcbh()
 		self.show_zcbh_message(path)
 	
-	def on_key_down(self, event):
-		keycode = event.GetKeyCode()
-		if keycode == 27:  # ESC键
-			# 切换图片窗体的显示和隐藏
-			if self.picframe.IsShown():
-				self.picframe.Hide()
-			else:
-				self.picframe.Show()
-	
 	def close(self):
 		try:
 			self.picframe.Close()
-		except wx.PyDeadObjectError:
+		except RuntimeError:
 			pass
 
 
@@ -311,8 +258,6 @@ def main(curdir_path, sample_path):
 
 
 if __name__ == '__main__':
-	inpath_curdir = r'E:\keras\figure\vcfp'  # 当前要打开的文件夹
-	# inpath_curdir = r'C:\Users\hustqb\Pictures\501'
-	outpath_sample = r'E:\keras\sample\DataFrame\vol\vol_break_type.csv'  # 样本信息的保存地址
-	# outpath_sample = r'C:\Users\hustqb\Pictures\501.csv'
+	inpath_curdir = r'pictures'  # 当前要打开的图片文件夹
+	outpath_sample = r'statistics.csv'  # 样本信息的保存地址
 	main(inpath_curdir, outpath_sample)
