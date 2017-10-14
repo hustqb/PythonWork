@@ -9,9 +9,10 @@ Python Imaging Library(PIL)为Python提供了处理图片的接口，包括文�
 3. 为底图噪声生成随机颜色
 ### 效果图
 
-![Image text](https://raw.githubusercontent.com/hustqb/PythonWork/tree/master/dailycoding/PIL/code.jpg)
+<img src=https://raw.githubusercontent.com/hustqb/PythonWork/tree/master/dailycoding/PIL/code.jpg>
 
 ## 参考
 
 [廖雪峰的官方网站——PIL](https://www.liaoxuefeng.com/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000/0014320027235877860c87af5544f25a8deeb55141d60c5000) 
+
 [Pillow](https://pillow.readthedocs.io/en/4.3.x/)
