@@ -12,4 +12,4 @@
 以utf-8编码的天龙八部小说
 ### 统计结果
 段誉真主角。
-![loading...](https://github.com/hustqb/PythonWork/tree/master/dailycoding/TextStatistics/statistics.png)
+<img src='statistics.png'>

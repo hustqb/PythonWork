@@ -21,8 +21,11 @@ wxPython是一个关于Python的跨平台GUI工具集。
 这个脚本的意义？
 &emsp;&emsp;在计算机视觉领域，使用神经网络前总是需要一些标定好的图片，这个脚本可以简化我们浏览和标定图片的工作。
 ### 效果展示
-<center>![巫妖王](https://github.com/hustqb/PythonWork/tree/master/dailycoding/python_UI)</center>
+<img src='demo.png'>
+
 [统计信息](https://github.com/hustqb/PythonWork/blob/master/dailycoding/python_UI/statistics.csv)
+
 ## 参考
 wxPython小程序来自于[wxPython官方文档](https://www.wxpython.org/pages/overview/)
+
 图片浏览器主要参考自——[使用wxpython实现的一个简单图片浏览器实例](http://www.jb51.net/article/52060.htm)
