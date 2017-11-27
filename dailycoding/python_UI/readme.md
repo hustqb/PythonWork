@@ -4,6 +4,17 @@ wxPython应该是有强大而稳定的团队在维护，它的网站和官方文
 ## wxPython
 wxPython是一个关于Python的跨平台GUI工具集。
 通过wxPython，开发者可以为它们的Python应用程序创建交互界面，并且几乎不需要做跨平台的改动。
+### 功能概述
+一个简单的GUI应用程序显示Hello World消息使用以下构建步骤：
+
+1. 导入wx模块
+2. 定义应用程序类的一个对象
+3. 常见一个顶层窗口的wx.Frame类的对象，给出构造标题和尺寸参数
+4. 虽然其他空间可以在Frame对象加入，但他们的布局无法管理。因此，把一个Panel对象添加到Frame
+5. 添加各种对象到Frame对象中
+6. 通过show()方法激活Frame窗口
+7. 输入应用程序对象的主事件循环
+
 ## 代码
 ### HelloWxPython
 先用wxPython官网上的一个简单的例子来展示wxpython设计GUI的格式。
